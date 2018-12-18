@@ -16,7 +16,7 @@ namespace IrisClustering.Model
         public float SepalLength;
 
         [Column("1")]
-        public float SepalWidth; 
+        public float SepalWidth;
 
         [Column("2")]
         public float PetalLength;
@@ -52,14 +52,16 @@ namespace IrisClustering
         /// <returns></returns>
         static async Task Main(string[] args)
         {
-            PredictionModel<IrisData, ClusterPrediction> model = Train();
-            await model.WriteAsync(_modelPath);
-            Console.ReadKey();
+            PredictionModel<IrisData, ClusterPrediction> model = Train().Result;
             TestModel(model);
             Console.ReadKey();
         }
-        private static PredictionModel<IrisData, ClusterPrediction> Train()
+        private static async Task<PredictionModel<IrisData, ClusterPrediction>> Train()
         {
+            if (File.Exists(_modelPath))
+            {
+                return await PredictionModel.ReadAsync<IrisData, ClusterPrediction>(_modelPath);
+            }
             var pipeline = new LearningPipeline();
             pipeline.Add(new TextLoader(_dataPath).CreateFrom<IrisData>(separator: ','));
             pipeline.Add(new ColumnConcatenator(
@@ -70,11 +72,12 @@ namespace IrisClustering
                 "PetalWidth"));
             pipeline.Add(new KMeansPlusPlusClusterer() { K = 3 });
             var model = pipeline.Train<IrisData, ClusterPrediction>();
+            await model.WriteAsync(_modelPath);
             return model;
         }
 
 
-       
+
 
         static void TestModel(PredictionModel<IrisData, ClusterPrediction> model)
         {
