@@ -16,7 +16,7 @@ namespace IrisClustering.Model
         public float SepalLength;
 
         [Column("1")]
-        public float SepalWidth;
+        public float SepalWidth; 
 
         [Column("2")]
         public float PetalLength;
